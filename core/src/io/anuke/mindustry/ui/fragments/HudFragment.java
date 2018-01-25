@@ -151,7 +151,7 @@ public class HudFragment implements Fragment{
 		}}.end();
 		
 		//profiling table
-		if(debug){
+		if(debug && Vars.showDebug){
 			new table(){{
 				atop();
 				new label("[green]density: " + Gdx.graphics.getDensity()).left();

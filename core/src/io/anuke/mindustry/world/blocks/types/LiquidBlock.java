@@ -1,11 +1,6 @@
 package io.anuke.mindustry.world.blocks.types;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import com.badlogic.gdx.utils.Array;
-
 import io.anuke.mindustry.entities.TileEntity;
 import io.anuke.mindustry.resource.Liquid;
 import io.anuke.mindustry.world.Block;
@@ -13,11 +8,13 @@ import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.graphics.Draw;
 import io.anuke.ucore.util.Mathf;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class LiquidBlock extends Block implements LiquidAcceptor{
-	protected final int timerFlow = timers++;
-	
 	protected float liquidCapacity = 10f;
-	protected float flowfactor = 4.9f;
+	protected float flowfactor = 4.9f; //1/5th of liquid amount gets sent every frame
 	
 	public LiquidBlock(String name) {
 		super(name);
@@ -57,10 +54,9 @@ public class LiquidBlock extends Block implements LiquidAcceptor{
 	public void update(Tile tile){
 		LiquidEntity entity = tile.entity();
 		
-		if(entity.liquidAmount > 0.01f && entity.timer.get(timerFlow, 3)){
+		if(entity.liquidAmount > 0.01f){
 			tryMoveLiquid(tile, tile.getNearby()[tile.getRotation()]);
 		}
-		
 	}
 	
 	public void tryDumpLiquid(Tile tile){
@@ -71,8 +67,12 @@ public class LiquidBlock extends Block implements LiquidAcceptor{
 			tile.setDump((byte)Mathf.mod(tile.getDump() + 1, 4));
 		}
 	}
-	
+
 	public void tryMoveLiquid(Tile tile, Tile next){
+		tryMoveLiquid(tile, next, tile.<LiquidEntity>entity().liquidAmount / flowfactor);
+	}
+	
+	public void tryMoveLiquid(Tile tile, Tile next, float tflow){
 		LiquidEntity entity = tile.entity();
 		
 		Liquid liquid = entity.liquid;
@@ -80,8 +80,7 @@ public class LiquidBlock extends Block implements LiquidAcceptor{
 		if(next != null && next.block() instanceof LiquidAcceptor && entity.liquidAmount > 0.01f){
 			LiquidAcceptor other = (LiquidAcceptor)next.block();
 			
-			float flow = Math.min(other.getLiquidCapacity(next) - other.getLiquid(next) - 0.001f, 
-					Math.min(entity.liquidAmount/flowfactor, entity.liquidAmount));
+			float flow = Math.min(other.getLiquidCapacity(next) - other.getLiquid(next) - 0.001f, tflow);
 			
 			if(flow <= 0f || entity.liquidAmount < flow) return;
 			
@@ -95,7 +94,6 @@ public class LiquidBlock extends Block implements LiquidAcceptor{
 	@Override
 	public boolean acceptLiquid(Tile tile, Tile source, Liquid liquid, float amount){
 		LiquidEntity entity = tile.entity();
-		
 		return entity.liquidAmount + amount < liquidCapacity && (entity.liquid == liquid || entity.liquidAmount <= 0.01f);
 	}
 	

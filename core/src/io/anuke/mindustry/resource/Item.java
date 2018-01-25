@@ -20,6 +20,8 @@ public class Item{
 
 	public final int id;
 	public final String name;
+	public float explosiveness = 0f;
+	public float flammability = 0f;
 
 	public Item(String name) {
 		this.id = items.size;

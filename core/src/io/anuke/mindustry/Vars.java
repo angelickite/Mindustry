@@ -56,6 +56,7 @@ public class Vars{
 	public static boolean showPlayer = true;
 	//whether to hide ui, only on debug
 	public static boolean showUI = true;
+	public static boolean showDebug = false;
 
 	public static float controllerMin = 0.25f;
 
