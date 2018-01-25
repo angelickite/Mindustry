@@ -4,6 +4,7 @@ import io.anuke.mindustry.resource.Liquid;
 import io.anuke.mindustry.world.Tile;
 import io.anuke.ucore.graphics.Draw;
 
+//TODO useless
 public class LiquidRouter extends Conduit{
 
 	public LiquidRouter(String name) {
@@ -12,19 +13,6 @@ public class LiquidRouter extends Conduit{
 		solid = true;
 		flowfactor = 1f;
 		liquidCapacity = 30f;
-	}
-	
-	@Override
-	public void update(Tile tile){
-		LiquidEntity entity = tile.entity();
-
-		float flow = entity.liquidAmount / flowfactor / 4f;
-
-		for(int i = 0; i < 4; i ++) {
-			tryMoveLiquid(tile, tile.getNearby()[i], flow);
-
-				//tile.setRotation((byte) ((tile.getRotation() + 1) % 4));
-		}
 	}
 	
 	@Override

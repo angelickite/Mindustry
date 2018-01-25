@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class LiquidBlock extends Block implements LiquidAcceptor{
 	protected float liquidCapacity = 10f;
-	protected float flowfactor = 4.9f; //1/5th of liquid amount gets sent every frame
+	protected float flowfactor = 5f; //1/5th of liquid amount gets sent every frame
 	
 	public LiquidBlock(String name) {
 		super(name);
@@ -67,20 +67,21 @@ public class LiquidBlock extends Block implements LiquidAcceptor{
 			tile.setDump((byte)Mathf.mod(tile.getDump() + 1, 4));
 		}
 	}
-
-	public void tryMoveLiquid(Tile tile, Tile next){
-		tryMoveLiquid(tile, next, tile.<LiquidEntity>entity().liquidAmount / flowfactor);
-	}
 	
-	public void tryMoveLiquid(Tile tile, Tile next, float tflow){
+	public void tryMoveLiquid(Tile tile, Tile next){
 		LiquidEntity entity = tile.entity();
 		
 		Liquid liquid = entity.liquid;
 		
 		if(next != null && next.block() instanceof LiquidAcceptor && entity.liquidAmount > 0.01f){
 			LiquidAcceptor other = (LiquidAcceptor)next.block();
+
+			if(other.getLiquid(next) / other.getLiquidCapacity(next) > entity.liquidAmount / liquidCapacity){
+				return;
+			}
 			
-			float flow = Math.min(other.getLiquidCapacity(next) - other.getLiquid(next) - 0.001f, tflow);
+			float flow = Math.min(other.getLiquidCapacity(next) - other.getLiquid(next) - 0.001f,
+					liquidCapacity * (entity.liquidAmount / liquidCapacity - other.getLiquid(next) / other.getLiquidCapacity(next)) / 1.5f);
 			
 			if(flow <= 0f || entity.liquidAmount < flow) return;
 			

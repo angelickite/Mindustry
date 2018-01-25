@@ -10,16 +10,30 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class LiquidTurret extends Turret implements LiquidAcceptor{
+    public Liquid ammoLiquid = Liquid.water;
     public float liquidCapacity = 20f;
+    public float liquidPerShot = 1f;
 
     public LiquidTurret(String name) {
         super(name);
     }
 
     @Override
+    public boolean hasAmmo(Tile tile){
+        LiquidTurretEntity entity = tile.entity();
+        return entity.liquidAmount > liquidPerShot;
+    }
+
+    @Override
+    public void consumeAmmo(Tile tile){
+        LiquidTurretEntity entity = tile.entity();
+        entity.liquidAmount -= liquidPerShot;
+    }
+
+    @Override
     public boolean acceptLiquid(Tile tile, Tile source, Liquid liquid, float amount){
         LiquidTurretEntity entity = tile.entity();
-        return entity.liquidAmount + amount < liquidCapacity && (entity.liquid == liquid || entity.liquidAmount <= 0.01f);
+        return ammoLiquid == liquid && entity.liquidAmount + amount < liquidCapacity && (entity.liquid == liquid || entity.liquidAmount <= 0.01f);
     }
 
     @Override

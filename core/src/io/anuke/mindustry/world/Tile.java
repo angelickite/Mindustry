@@ -66,6 +66,24 @@ public class Tile{
 		if(x == cx + 1 && y == cy) return 2;
 		return -1;
 	}
+
+	public Tile nearby(int direction){
+		if(direction == 0) return Vars.world.tile(x + 1, y);
+		if(direction == 1) return Vars.world.tile(x, y + 1);
+		if(direction == 2) return Vars.world.tile(x - 1, y);
+		if(direction == 3) return Vars.world.tile(x, y - 1);
+		return null;
+	}
+
+	public boolean isFacing(int cx, int cy){
+		return getRotation() == relativeTo(cx, cy);
+	}
+
+	public boolean isPerpedicular(int cx, int cy){
+		int rel = relativeTo(cx, cy);
+		int rot = getRotation();
+		return rel == rot || (rel + 2) % 4 == rot;
+	}
 	
 	public <T extends TileEntity> T entity(){
 		return (T)entity;
