@@ -4,6 +4,7 @@ import com.badlogic.gdx.ai.pfa.PathFinderRequest;
 import com.badlogic.gdx.ai.pfa.PathSmoother;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import io.anuke.mindustry.entities.enemies.Enemy;
 import io.anuke.mindustry.game.SpawnPoint;
 import io.anuke.mindustry.world.Tile;
@@ -122,7 +123,10 @@ public class Pathfind{
 	public void update(){
 
 		//go through each spawnpoint, and if it's not found a path yet, update it
-		for(SpawnPoint point : world.getSpawns()){
+		Array<SpawnPoint> points = world.getSpawns();
+
+		for(int i = 0; i < points.size; i ++){
+			SpawnPoint point = points.get(i);
 			if(point.request == null || point.finder == null){
 				continue;
 			}

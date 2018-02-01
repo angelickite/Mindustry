@@ -23,7 +23,7 @@ public class TunnelConveyor extends Block{
 	}
 	
 	@Override
-	public void handleItem(Item item, Tile tile, Tile source){
+	public synchronized void handleItem(Item item, Tile tile, Tile source){
 		Tile tunnel = getDestTunnel(tile, item);
 		if(tunnel == null) return;
 		Tile to = tunnel.getNearby()[tunnel.getRotation()];
@@ -42,7 +42,7 @@ public class TunnelConveyor extends Block{
 	}
 
 	@Override
-	public boolean acceptItem(Item item, Tile tile, Tile source){
+	public synchronized boolean acceptItem(Item item, Tile tile, Tile source){
 		int rot = source.relativeTo(tile.x, tile.y);
 		if(rot != (tile.getRotation() + 2)%4) return false;
 		Tile tunnel = getDestTunnel(tile, item);
@@ -55,25 +55,17 @@ public class TunnelConveyor extends Block{
 		}
 	}
 	
-	Tile getDestTunnel(Tile tile, Item item){
+	synchronized Tile getDestTunnel(Tile tile, Item item){
 		Tile dest = tile;
 		int rel = (tile.getRotation() + 2)%4;
 		for(int i = 0; i < maxdist; i ++){
 			dest = dest.getNearby()[rel];
 			if(dest != null && dest.block() instanceof TunnelConveyor && dest.getRotation() == rel
-					&& dest.getNearby()[rel] != null
-					&& dest.getNearby()[rel].block().acceptItem(item, dest.getNearby()[rel], dest)){
+					&& dest.getNearby(temptiles)[rel] != null
+					&& dest.getNearby(temptiles)[rel].block().acceptItem(item, dest.getNearby(temptiles)[rel], dest)){
 				return dest;
 			}
 		}
 		return null;
-	}
-	
-	Tile getOther(Tile tile, int dir, int amount){
-		for(int i = 0; i < amount; i ++){
-			if(tile == null) return null;
-			tile = tile.getNearby()[dir];
-		}
-		return tile;
 	}
 }

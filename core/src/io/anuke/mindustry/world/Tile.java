@@ -67,7 +67,7 @@ public class Tile{
 		return -1;
 	}
 	
-	public <T extends TileEntity> T entity(){
+	public synchronized <T extends TileEntity> T entity(){
 		return (T)entity;
 	}
 	
@@ -230,11 +230,11 @@ public class Tile{
 		}
 	}
 	
-	public Tile[] getNearby(){
+	public synchronized Tile[] getNearby(){
 		return world.getNearby(x, y);
 	}
 
-	public Tile[] getNearby(Tile[] copy){
+	public synchronized Tile[] getNearby(Tile[] copy){
 		return world.getNearby(x, y, copy);
 	}
 

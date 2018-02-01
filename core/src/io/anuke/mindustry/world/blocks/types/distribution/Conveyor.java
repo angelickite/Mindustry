@@ -26,6 +26,8 @@ import static io.anuke.mindustry.Vars.tilesize;
 public class Conveyor extends Block{
 	private static ItemPos pos1 = new ItemPos();
 	private static ItemPos pos2 = new ItemPos();
+	private static ItemPos dpos1 = new ItemPos();
+	private static ItemPos dpos2 = new ItemPos();
 	private static LongArray removals = new LongArray();
 	private static final float itemSpace = 0.135f;
 	private static final float offsetScl = 128f*3f;
@@ -66,68 +68,69 @@ public class Conveyor extends Block{
 	}
 	
 	@Override
-	public void drawLayer(Tile tile){
-		ConveyorEntity entity = tile.entity();
-		
-		byte rotation = tile.getRotation();
-		
-		for(int i = 0; i < entity.convey.size; i ++){
-			ItemPos pos = pos1.set(entity.convey.get(i));
+	public synchronized void drawLayer(Tile tile){
 
-			if(pos.item == null) continue;
-			
+		ConveyorEntity entity = tile.entity();
+
+		byte rotation = tile.getRotation();
+
+		for (int i = 0; i < entity.convey.size; i++) {
+			ItemPos pos = dpos1.set(entity.convey.get(i));
+
+			if (pos.item == null) continue;
+
 			Tmp.v1.set(tilesize, 0).rotate(rotation * 90);
-			Tmp.v2.set(-tilesize / 2, pos.x*tilesize/2).rotate(rotation * 90);
-			
+			Tmp.v2.set(-tilesize / 2, pos.x * tilesize / 2).rotate(rotation * 90);
+
 			Draw.rect("icon-" + pos.item.name,
-					tile.x * tilesize + Tmp.v1.x * pos.y + Tmp.v2.x, 
+					tile.x * tilesize + Tmp.v1.x * pos.y + Tmp.v2.x,
 					tile.y * tilesize + Tmp.v1.y * pos.y + Tmp.v2.y, itemSize, itemSize);
 		}
 	}
 	
 	@Override
-	public void update(Tile tile){
-		
+	public synchronized void update(Tile tile){
+
 		ConveyorEntity entity = tile.entity();
 		entity.minitem = 1f;
-		
+
 		removals.clear();
 
 		float shift = entity.elapsed * speed;
 
-		for(int i = 0; i < entity.convey.size; i ++){
+		for (int i = 0; i < entity.convey.size; i++) {
 			long value = entity.convey.get(i);
 			ItemPos pos = pos1.set(value);
 
-			if(pos.item == null){
+			if (pos.item == null) {
 				removals.add(value);
 				continue;
 			}
-			
-			boolean canmove = i == entity.convey.size - 1 || 
-					!(pos2.set(entity.convey.get(i + 1)).y - pos.y < itemSpace  * Math.max(Timers.delta(), 1f));
+
+			boolean canmove = i == entity.convey.size - 1 ||
+					!(pos2.set(entity.convey.get(i + 1)).y - pos.y < itemSpace * Math.max(Timers.delta(), 1f));
 
 			float minmove = 1f / (Short.MAX_VALUE - 2);
 
-			if(canmove){
+			if (canmove) {
 				pos.y += Math.max(speed * Timers.delta() + shift, minmove); //TODO fix precision issues when at high FPS?
 				pos.x = Mathf.lerpDelta(pos.x, 0, 0.06f);
-			}else{
-				pos.x = Mathf.lerpDelta(pos.x, pos.seed/offsetScl, 0.1f);
+			} else {
+				pos.x = Mathf.lerpDelta(pos.x, pos.seed / offsetScl, 0.1f);
 			}
-			
+
 			pos.y = Mathf.clamp(pos.y);
-			
-			if(pos.y >= 0.9999f && offloadDir(tile, pos.item)){
+
+			if (pos.y >= 0.9999f && offloadDir(tile, pos.item)) {
 				removals.add(value);
-			}else{
+			} else {
 				value = pos.pack();
-				
-				if(pos.y < entity.minitem)
+
+				if (pos.y < entity.minitem)
 					entity.minitem = pos.y;
 				entity.convey.set(i, value);
 			}
-			
+
 		}
 
 		entity.elapsed = 0f;
@@ -140,7 +143,7 @@ public class Conveyor extends Block{
 	}
 
 	@Override
-	public boolean acceptItem(Item item, Tile tile, Tile source){
+	public synchronized boolean acceptItem(Item item, Tile tile, Tile source){
 		int direction = source == null ? 0 : Math.abs(source.relativeTo(tile.x, tile.y) - tile.getRotation());
 		float minitem = tile.<ConveyorEntity>entity().minitem;
 		return (((direction == 0) && minitem > 0.05f) || 
@@ -148,7 +151,7 @@ public class Conveyor extends Block{
 	}
 
 	@Override
-	public void handleItem(Item item, Tile tile, Tile source){
+	public synchronized void handleItem(Item item, Tile tile, Tile source){
 		byte rotation = tile.getRotation();
 		
 		int ch = Math.abs(source.relativeTo(tile.x, tile.y) - rotation);
