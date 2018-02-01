@@ -13,7 +13,7 @@ import io.anuke.ucore.util.Log;
 import static io.anuke.mindustry.Vars.*;
 
 public class Mindustry extends ModuleCore {
-	boolean multithread = false;
+	boolean multithread = true;
 	Thread thread;
 	float delta = 1f;
 
